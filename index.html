@@ -61,30 +61,8 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-s
 </div>
 
 <script>
-// EL ROBOT DE PYTHON BUSCA EXACTAMENTE ESTA LÍNEA: results: [
-const DATA_LOTO = {
-    pick3fl: {
-        results: [
-            {date:'03/29', time:'Noche', nums:[1,0,2]},
-            {date:'03/29', time:'Mediodía', nums:[4,8,5]},
-            {date:'03/28', time:'Noche', nums:[7,3,9]},
-            {date:'03/28', time:'Mediodía', nums:[0,1,6]},
-            {date:'03/27', time:'Noche', nums:[5,5,2]},
-            {date:'03/27', time:'Mediodía', nums:[2,0,4]},
-            {date:'03/26', time:'Noche', nums:[8,1,7]}
-        ]
-    }
-};
-
-// CHARADA - Sin duplicados (Corrección de tabla)
-const CHARADA = {
-    1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",
-    6:"Jicotea",7:"Caracol",8:"Muerto",9:"Elefante",10:"Pescado",
-    11:"Gallo",12:"Mujer",13:"Pavo",14:"Gato fino",15:"Perro",
-    16:"Toro",17:"Luna",18:"Pez",19:"Lombriz",20:"Novio",
-    21:"Reloj",22:"Sapo",23:"Vapor",24:"Paloma",25:"Piedra",
-    26:"Anguila",27:"Avispa",28:"Chivo",29:"Rata",30:"Camarón"
-};
+let DATA_LOTO = null;
+let CHARADA = null;
 
 // Función auxiliar para crear elementos seguros (previene XSS)
 function createRball(number) {
@@ -104,11 +82,38 @@ function createSmallRball(number) {
     return span;
 }
 
+// Cargar datos desde data.json
+async function loadData() {
+    try {
+        const response = await fetch('data.json');
+        if (!response.ok) throw new Error('No se pudo cargar data.json');
+        const data = await response.json();
+        DATA_LOTO = data.pick3fl;
+        CHARADA = data.charada;
+        init();
+    } catch (err) {
+        console.error("Error cargando datos:", err);
+        showError("Error al cargar datos. Verifica que data.json existe.");
+    }
+}
+
+function showError(message) {
+    const errorSpan = document.createElement('span');
+    errorSpan.style.color = 'red';
+    errorSpan.style.fontSize = '10px';
+    errorSpan.textContent = message;
+    document.getElementById('hero-numbers').innerHTML = '';
+    document.getElementById('hero-numbers').appendChild(errorSpan);
+}
+
 function init() {
     try {
-        const res = DATA_LOTO.pick3fl.results;
-        if (!res || res.length === 0) return;
+        if (!DATA_LOTO || !DATA_LOTO.results || DATA_LOTO.results.length === 0) {
+            showError("No hay datos disponibles");
+            return;
+        }
         
+        const res = DATA_LOTO.results;
         const ultimo = res[0];
 
         // Validación: asegurar que tenemos al menos 3 números
@@ -168,17 +173,12 @@ function init() {
 
     } catch (err) {
         console.error("Error en la aplicación:", err);
-        const errorSpan = document.createElement('span');
-        errorSpan.style.color = 'red';
-        errorSpan.style.fontSize = '10px';
-        errorSpan.textContent = 'Error al cargar datos. Refresca la página.';
-        document.getElementById('hero-numbers').innerHTML = '';
-        document.getElementById('hero-numbers').appendChild(errorSpan);
+        showError('Error al procesar datos. Refresca la página.');
     }
 }
 
 // Ejecutar al cargar
-window.addEventListener('load', init);
+window.addEventListener('load', loadData);
 </script>
 </body>
 </html>
