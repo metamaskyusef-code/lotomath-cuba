@@ -1,6 +1,6 @@
 name: Actualizar Resultados Lotería
 on:
-  schedule:
+  schedule: r"(pick3fl:\{.*?results:\[)(.*?)(\])"
     - cron: '0 4 * * *' # Se ejecuta a las 4:00 AM UTC (Medianoche en Cuba/NY)
   workflow_dispatch: # Activa el botón gris para probar a mano
 
@@ -29,4 +29,4 @@ jobs:
           git add index.html
           git commit -m "Resultados actualizados automáticamente" || echo "Sin cambios"
           git push
-patron = r"(pick3fl:\{.*?results:\[)(.*?)(\])"
+ 
