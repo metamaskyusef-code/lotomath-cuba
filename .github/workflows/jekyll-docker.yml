@@ -1,0 +1,28 @@
+name: Actualizar Resultados Lotería
+on:
+  schedule:
+    - cron: '0 4 * * *' # Se ejecuta a las 4:00 AM UTC (medianoche en Cuba/NY)
+  workflow_dispatch: # Permite ejecutarlo a mano para probar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          
+      - name: Ejecutar actualización
+        run: python update_lotto.py
+        
+      - name: Guardar cambios
+        run: |
+          git config --global user.name 'LotoMath Bot'
+          git config --global user.email 'bot@lotomath.com'
+          git add index.html
+          git commit -m "Resultados actualizados automáticamente"
+          git push
