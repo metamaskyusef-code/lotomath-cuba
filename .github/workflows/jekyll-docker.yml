@@ -29,3 +29,4 @@ jobs:
           git add index.html
           git commit -m "Resultados actualizados automáticamente" || echo "Sin cambios"
           git push
+patron = r"(pick3fl:\{.*?results:\[)(.*?)(\])"
