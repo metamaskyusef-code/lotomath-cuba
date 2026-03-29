@@ -2,10 +2,10 @@ name: Actualizar Resultados Lotería
 on:
   schedule:
     - cron: '0 4 * * *' # Se ejecuta a las 4:00 AM UTC (Medianoche en Cuba/NY)
-  workflow_dispatch: # Esto activa el botón gris para que pruebes ahora mismo
+  workflow_dispatch: # Activa el botón gris para probar a mano
 
 permissions:
-  contents: write # ESTA ES LA LLAVE MAESTRA
+  contents: write # <--- ESTO ES LO QUE TE DA EL PERMISO QUE TE FALTA
 
 jobs:
   build:
@@ -29,4 +29,3 @@ jobs:
           git add index.html
           git commit -m "Resultados actualizados automáticamente" || echo "Sin cambios"
           git push
-patron = r"(pick3fl:\{.*?results:\[)(.*?)(\])"
