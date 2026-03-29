@@ -12,7 +12,7 @@
 }
 body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin:0;line-height:1.6;overflow-x:hidden;}
 .app{min-height:100vh;display:flex;flex-direction:column;}
-.topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);}
 .brand-name{font-family:'JetBrains Mono';font-size:16px;font-weight:700;color:#fff;}
 .main{padding:16px 22px;max-width:1200px;margin:0 auto;width:100%;}
 .card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:15px;margin-bottom:15px;}
@@ -24,26 +24,26 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin
 <div class="app">
     <header class="topbar">
         <div class="brand-name">LotoMath<span style="color:var(--gold)">Pro</span>™ <span style="font-size:10px;color:var(--dim)">Cuba Edition</span></div>
-        <div style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● SISTEMA ACTIVO</div>
+        <div id="status-badge" style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● SISTEMA ACTIVO</div>
     </header>
 
     <main class="main">
         <div class="card">
             <div style="color:var(--dim);font-size:11px;margin-bottom:12px;text-transform:uppercase;display:flex;justify-content:space-between;">
                 <span>🌴 Florida Pick 3</span>
-                <span id="last-date" style="color:var(--gold)">Cargando...</span>
+                <span id="last-date" style="color:var(--gold)">Cargando datos...</span>
             </div>
             <div id="hero-numbers" style="display:flex;gap:10px;"></div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
-            <div class="card">
-                <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;">🀄 CHARADA</div>
-                <div id="charada-box" style="font-size:13px;font-weight:600;color:#fff;">--</div>
+            <div class="card" style="margin-bottom:0;">
+                <div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:8px;">🀄 CHARADA</div>
+                <div id="charada-box" style="font-size:14px;font-weight:600;color:#fff;">--</div>
             </div>
-            <div class="card">
-                <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px;">▲ PIRÁMIDE</div>
-                <div id="piramide-box" style="font-family:'JetBrains Mono';">--</div>
+            <div class="card" style="margin-bottom:0;">
+                <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">▲ PIRÁMIDE</div>
+                <div id="piramide-box" style="font-family:'JetBrains Mono';font-size:14px;">--</div>
             </div>
         </div>
 
@@ -55,9 +55,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin
 </div>
 
 <script>
-/* EL ROBOT DE PYTHON BUSCARÁ ESTA VARIABLE PARA ACTUALIZAR:
-  results: [
-*/
+/* VARIABLE MAESTRA - EL ROBOT BUSCA "results: [" */
 const DATA_LOTO = {
     pick3fl: {
         results: [
@@ -77,12 +75,15 @@ function init() {
         const res = DATA_LOTO.pick3fl.results;
         const ultimo = res[0];
 
+        // 1. Mostrar fecha y números
         document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
         document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
 
+        // 2. Charada del terminal
         const terminal = parseInt("" + ultimo.nums[1] + ultimo.nums[2]);
         document.getElementById('charada-box').innerText = terminal + ' - ' + (CHARADA[terminal] || "Ver tabla");
 
+        // 3. Histórico
         document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
             <div class="re-row">
                 <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--dim);">${r.date}</div>
@@ -91,10 +92,11 @@ function init() {
             </div>
         `).join('');
 
-        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + ((ultimo.nums[0]+ultimo.nums[1])%10) + ((ultimo.nums[1]+ultimo.nums[2])%10);
-    } catch(e) {
-        console.error("Error en LotoMath:", e);
-    }
+        // 4. Pirámide
+        const p1 = (ultimo.nums[0] + ultimo.nums[1]) % 10;
+        const p2 = (ultimo.nums[1] + ultimo.nums[2]) % 10;
+        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + p1 + p2;
+    } catch(e) { console.error(e); }
 }
 window.onload = init;
 </script>
