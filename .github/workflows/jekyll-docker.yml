@@ -1,11 +1,9 @@
 name: Actualizar Resultados Lotería
 on:
-  schedule: r"(pick3fl:\{.*?results:\[)(.*?)(\])"
-    - cron: '0 4 * * *' # Se ejecuta a las 4:00 AM UTC (Medianoche en Cuba/NY)
-  workflow_dispatch: # Activa el botón gris para probar a mano
+  workflow_dispatch: # Activa el botón gris
 
 permissions:
-  contents: write # <--- ESTO ES LO QUE TE DA EL PERMISO QUE TE FALTA
+  contents: write # <--- DA EL PERMISO QUE TE FALTA
 
 jobs:
   build:
@@ -13,20 +11,16 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-      
       - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          
       - name: Ejecutar actualización
         run: python update_lotto.py
-        
       - name: Guardar cambios
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m "Resultados actualizados automáticamente" || echo "Sin cambios"
+          git commit -m "Auto-update lotto" || echo "Sin cambios"
           git push
- 
