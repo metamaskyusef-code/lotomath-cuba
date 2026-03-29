@@ -3,18 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LotoMath Pro™ Cuba Edition</title>
+<title>LotoMath Pro™ Cuba</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#05070d;--s1:#090c16;--s2:#0e1220;--b1:#1a2438;--b2:#202e4a;
-  --gold:#D4AF37;--text:#c5d4ee;--dim:#4a6284;--teal:#0bbfa8;--fl:#0052cc;
-}
-body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin:0;line-height:1.6;overflow-x:hidden;}
-.app{min-height:100vh;display:flex;flex-direction:column;}
-.topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);}
-.brand-name{font-family:'JetBrains Mono';font-size:16px;font-weight:700;color:#fff;}
-.main{padding:16px 22px;max-width:1200px;margin:0 auto;width:100%;}
+:root{--bg:#05070d;--s1:#090c16;--b1:#1a2438;--gold:#D4AF37;--text:#c5d4ee;--dim:#4a6284;--teal:#0bbfa8;--fl:#0052cc;}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin:0;line-height:1.6;}
+.topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.main{padding:16px 22px;max-width:800px;margin:0 auto;}
 .card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:15px;margin-bottom:15px;}
 .rball{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-weight:700;background:rgba(0,82,204,.1);border:1px solid var(--fl);color:#6699ff;margin-right:5px;font-size:12px;}
 .re-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(26,36,56,.4);}
@@ -23,39 +18,25 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin
 <body>
 <div class="app">
     <header class="topbar">
-        <div class="brand-name">LotoMath<span style="color:var(--gold)">Pro</span>™ <span style="font-size:10px;color:var(--dim)">Cuba Edition</span></div>
-        <div id="status-badge" style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● SISTEMA ACTIVO</div>
+        <div style="font-family:'JetBrains Mono';font-weight:700;">LotoMath<span style="color:var(--gold)">Pro</span>™</div>
+        <div style="font-size:10px;color:var(--teal);">● SISTEMA AUTOMATIZADO</div>
     </header>
-
     <main class="main">
         <div class="card">
-            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;text-transform:uppercase;display:flex;justify-content:space-between;">
+            <div style="color:var(--dim);font-size:11px;margin-bottom:10px;display:flex;justify-content:space-between;">
                 <span>🌴 Florida Pick 3</span>
-                <span id="last-date" style="color:var(--gold)">Cargando datos...</span>
+                <span id="last-date" style="color:var(--gold)">--/--</span>
             </div>
-            <div id="hero-numbers" style="display:flex;gap:10px;"></div>
+            <div id="hero-numbers" style="display:flex;"></div>
         </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
-            <div class="card" style="margin-bottom:0;">
-                <div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:8px;">🀄 CHARADA</div>
-                <div id="charada-box" style="font-size:14px;font-weight:600;color:#fff;">--</div>
-            </div>
-            <div class="card" style="margin-bottom:0;">
-                <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">▲ PIRÁMIDE</div>
-                <div id="piramide-box" style="font-family:'JetBrains Mono';font-size:14px;">--</div>
-            </div>
-        </div>
-
         <div class="card">
-            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;font-weight:700;">📋 HISTÓRICO RECIENTE</div>
+            <div style="color:var(--dim);font-size:11px;margin-bottom:10px;">📋 HISTÓRICO RECIENTE</div>
             <div id="history-list"></div>
         </div>
     </main>
 </div>
-
 <script>
-/* VARIABLE MAESTRA - EL ROBOT BUSCA "results: [" */
+/* ESTRUCTURA PROTEGIDA - EL ROBOT BUSCA "results: [" */
 const DATA_LOTO = {
     pick3fl: {
         results: [
@@ -68,35 +49,19 @@ const DATA_LOTO = {
     }
 };
 
-const CHARADA = {1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",6:"Jicotea",7:"Caracol",8:"Muerto",9:"Elefante",10:"Pescado",11:"Gallo",12:"Mujer",13:"Pavo",14:"Gato fino",15:"Perro",16:"Toro",17:"Luna",18:"Pescado",19:"Lombriz",20:"Gato",21:"Reloj",22:"Sapo",23:"Vapor",24:"Paloma",25:"Piedra",26:"Anguila",27:"Avispa",28:"Chivo",29:"Rata",30:"Camarón"};
-
 function init() {
-    try {
-        const res = DATA_LOTO.pick3fl.results;
-        const ultimo = res[0];
-
-        // 1. Mostrar fecha y números
-        document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
-        document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
-
-        // 2. Charada del terminal
-        const terminal = parseInt("" + ultimo.nums[1] + ultimo.nums[2]);
-        document.getElementById('charada-box').innerText = terminal + ' - ' + (CHARADA[terminal] || "Ver tabla");
-
-        // 3. Histórico
-        document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
-            <div class="re-row">
-                <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--dim);">${r.date}</div>
-                <div>${r.nums.map(n => `<span class="rball" style="width:24px;height:24px;font-size:10px;">${n}</span>`).join('')}</div>
-                <div style="font-size:10px;color:var(--gold);font-weight:700;">${r.nums[1]}${r.nums[2]}</div>
-            </div>
-        `).join('');
-
-        // 4. Pirámide
-        const p1 = (ultimo.nums[0] + ultimo.nums[1]) % 10;
-        const p2 = (ultimo.nums[1] + ultimo.nums[2]) % 10;
-        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + p1 + p2;
-    } catch(e) { console.error(e); }
+    const res = DATA_LOTO.pick3fl.results;
+    if(!res || res.length === 0) return;
+    const ultimo = res[0];
+    document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
+    document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
+    document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
+        <div class="re-row">
+            <div style="font-family:'JetBrains Mono';font-size:11px;">${r.date}</div>
+            <div>${r.nums.map(n => `<span class="rball" style="width:24px;height:24px;font-size:10px;">${n}</span>`).join('')}</div>
+            <div style="font-size:10px;color:var(--dim);">${r.time}</div>
+        </div>
+    `).join('');
 }
 window.onload = init;
 </script>
