@@ -4,22 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LotoMath Pro™ Cuba Edition</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#05070d;--s1:#090c16;--s2:#0e1220;--b1:#1a2438;--b2:#202e4a;
   --gold:#D4AF37;--text:#c5d4ee;--dim:#4a6284;--teal:#0bbfa8;--fl:#0052cc;
 }
-body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:14px;margin:0;line-height:1.6;overflow-x:hidden;}
-.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin:0;line-height:1.6;}
 .topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);}
 .brand-name{font-family:'JetBrains Mono';font-size:16px;font-weight:700;color:#fff;}
 .brand-name em{color:var(--gold);font-style:normal;}
-.main{padding:16px 22px;max-width:1200px;margin:0 auto;width:100%;flex:1;}
+.main{padding:16px 22px;max-width:1200px;margin:0 auto;}
 .card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:15px;margin-bottom:15px;}
 .rball{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;background:rgba(0,82,204,.1);border:1px solid var(--fl);color:#6699ff;margin-right:5px;font-size:12px;}
-.btn-sm{background:var(--s2);border:1px solid var(--b2);color:var(--gold);padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;transition:0.2s;}
 .re-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(26,36,56,.4);}
 </style>
 </head>
@@ -27,15 +24,12 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-s
 <div class="app">
     <header class="topbar">
         <div class="brand-name">LotoMath<em>Pro</em>™ <span style="font-size:10px;color:var(--dim)">Cuba Edition</span></div>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div id="status-dot" style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● LIVE</div>
-            <button class="btn-sm" onclick="location.reload()">ACTUALIZAR</button>
-        </div>
+        <div style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● ACTUALIZACIÓN AUTOMÁTICA</div>
     </header>
 
     <main class="main">
         <div class="card">
-            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;">
+            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;text-transform:uppercase;display:flex;justify-content:space-between;">
                 <span>🌴 Florida Pick 3</span>
                 <span id="last-date" style="color:var(--gold)">--/--</span>
             </div>
@@ -43,142 +37,60 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-s
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
-            <div class="card" style="margin-bottom:0;">
-                <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;">🀄 CHARADA RÁPIDA</div>
+            <div class="card">
+                <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;">🀄 CHARADA</div>
                 <div id="charada-box" style="font-size:13px;font-weight:600;color:#fff;">--</div>
             </div>
-            <div class="card" style="margin-bottom:0;">
+            <div class="card">
                 <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px;">▲ PIRÁMIDE</div>
                 <div id="piramide-box" style="font-family:'JetBrains Mono';">--</div>
             </div>
         </div>
 
         <div class="card">
-            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;font-weight:700;">📋 HISTÓRICO DE SORTEOS</div>
+            <div style="color:var(--dim);font-size:11px;margin-bottom:12px;font-weight:700;">📋 HISTÓRICO</div>
             <div id="history-list"></div>
         </div>
     </main>
 </div>
 
 <script>
-let DATA_LOTO = null;
-let CHARADA = null;
-
-// Función auxiliar para crear elementos seguros (previene XSS)
-function createRball(number) {
-    const div = document.createElement('div');
-    div.className = 'rball';
-    div.textContent = String(number);
-    return div;
-}
-
-function createSmallRball(number) {
-    const span = document.createElement('span');
-    span.className = 'rball';
-    span.style.width = '24px';
-    span.style.height = '24px';
-    span.style.fontSize = '10px';
-    span.textContent = String(number);
-    return span;
-}
-
-// Cargar datos desde data.json
-async function loadData() {
-    try {
-        const response = await fetch('data.json');
-        if (!response.ok) throw new Error('No se pudo cargar data.json');
-        const data = await response.json();
-        DATA_LOTO = data.pick3fl;
-        CHARADA = data.charada;
-        init();
-    } catch (err) {
-        console.error("Error cargando datos:", err);
-        showError("Error al cargar datos. Verifica que data.json existe.");
+// EL ROBOT DE PYTHON BUSCARÁ ESTA LÍNEA EXACTA: results: [
+const DATA_LOTO = {
+    pick3fl: {
+        results: [
+            {date:'03/29', time:'Noche', nums:[1,0,2]},
+            {date:'03/29', time:'Mediodía', nums:[4,8,5]},
+            {date:'03/28', time:'Noche', nums:[7,3,9]},
+            {date:'03/28', time:'Mediodía', nums:[0,1,6]},
+            {date:'03/27', time:'Noche', nums:[5,5,2]}
+        ]
     }
-}
+};
 
-function showError(message) {
-    const errorSpan = document.createElement('span');
-    errorSpan.style.color = 'red';
-    errorSpan.style.fontSize = '10px';
-    errorSpan.textContent = message;
-    document.getElementById('hero-numbers').innerHTML = '';
-    document.getElementById('hero-numbers').appendChild(errorSpan);
-}
+const CHARADA = {1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",6:"Jicotea",7:"Caracol",8:"Muerto",9:"Elefante",10:"Pescado",11:"Gallo",12:"Mujer",13:"Pavo",14:"Gato fino",15:"Perro",16:"Toro",17:"Luna",18:"Pescado",19:"Lombriz",20:"Gato",21:"Reloj",22:"Sapo",23:"Vapor",24:"Paloma",25:"Piedra",26:"Anguila",27:"Avispa",28:"Chivo",29:"Rata",30:"Camarón"};
 
 function init() {
-    try {
-        if (!DATA_LOTO || !DATA_LOTO.results || DATA_LOTO.results.length === 0) {
-            showError("No hay datos disponibles");
-            return;
-        }
-        
-        const res = DATA_LOTO.results;
-        const ultimo = res[0];
+    const res = DATA_LOTO.pick3fl.results;
+    const ultimo = res[0];
 
-        // Validación: asegurar que tenemos al menos 3 números
-        if (!ultimo.nums || ultimo.nums.length < 3) {
-            throw new Error("Datos de números inválidos");
-        }
+    document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
+    document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
 
-        // 1. Mostrar fecha y números grandes (usando textContent para seguridad)
-        document.getElementById('last-date').textContent = `${ultimo.date} (${ultimo.time})`;
-        
-        const heroContainer = document.getElementById('hero-numbers');
-        heroContainer.innerHTML = ''; // Limpiar
-        ultimo.nums.forEach(n => {
-            heroContainer.appendChild(createRball(n));
-        });
+    const terminal = parseInt("" + ultimo.nums[1] + ultimo.nums[2]);
+    document.getElementById('charada-box').innerText = terminal + ' - ' + (CHARADA[terminal] || "Ver tabla");
 
-        // 2. Charada (Terminal de los 2 últimos números) - CON VALIDACIÓN
-        const terminal = parseInt(String(ultimo.nums[1]) + String(ultimo.nums[2]));
-        const charadaText = `${terminal} - ${CHARADA[terminal] || "Ver tabla"}`;
-        document.getElementById('charada-box').textContent = charadaText;
+    document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
+        <div class="re-row">
+            <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--dim);">${r.date}</div>
+            <div>${r.nums.map(n => `<span class="rball" style="width:24px;height:24px;font-size:10px;">${n}</span>`).join('')}</div>
+            <div style="font-size:10px;color:var(--gold);font-weight:700;">${r.nums[1]}${r.nums[2]}</div>
+        </div>
+    `).join('');
 
-        // 3. Histórico (usando textContent donde sea posible para XSS prevention)
-        const historyList = document.getElementById('history-list');
-        historyList.innerHTML = '';
-        
-        res.slice(1).forEach(r => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 're-row';
-            
-            const dateDiv = document.createElement('div');
-            dateDiv.style.fontFamily = "'JetBrains Mono'";
-            dateDiv.style.fontSize = '11px';
-            dateDiv.style.color = 'var(--dim)';
-            dateDiv.textContent = r.date;
-            rowDiv.appendChild(dateDiv);
-            
-            const numsDiv = document.createElement('div');
-            r.nums.forEach(n => {
-                numsDiv.appendChild(createSmallRball(n));
-            });
-            rowDiv.appendChild(numsDiv);
-            
-            const terminalDiv = document.createElement('div');
-            terminalDiv.style.fontSize = '10px';
-            terminalDiv.style.color = 'var(--gold)';
-            terminalDiv.style.fontWeight = '700';
-            terminalDiv.textContent = `${r.nums[1]}${r.nums[2]}`;
-            rowDiv.appendChild(terminalDiv);
-            
-            historyList.appendChild(rowDiv);
-        });
-
-        // 4. Pirámide (Lógica simple con validación)
-        const p1 = (ultimo.nums[0] + ultimo.nums[1]) % 10;
-        const p2 = (ultimo.nums[1] + ultimo.nums[2]) % 10;
-        document.getElementById('piramide-box').textContent = `${ultimo.nums.join('')} → ${p1}${p2}`;
-
-    } catch (err) {
-        console.error("Error en la aplicación:", err);
-        showError('Error al procesar datos. Refresca la página.');
-    }
+    document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + ((ultimo.nums[0]+ultimo.nums[1])%10) + ((ultimo.nums[1]+ultimo.nums[2])%10);
 }
-
-// Ejecutar al cargar
-window.addEventListener('load', loadData);
+window.onload = init;
 </script>
 </body>
 </html>
