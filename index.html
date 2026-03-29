@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LotoMath Pro™ Cuba Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#05070d;--s1:#090c16;--s2:#0e1220;--b1:#1a2438;--b2:#202e4a;
-  --gold:#D4AF37;--gb:rgba(212,175,55,.11);--text:#c5d4ee;--dim:#4a6284;
-  --teal:#0bbfa8;--fl:#0052cc;
+  --gold:#D4AF37;--text:#c5d4ee;--dim:#4a6284;--teal:#0bbfa8;--fl:#0052cc;
 }
 body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:14px;margin:0;line-height:1.6;overflow-x:hidden;}
 .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
@@ -29,7 +28,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-s
     <header class="topbar">
         <div class="brand-name">LotoMath<em>Pro</em>™ <span style="font-size:10px;color:var(--dim)">Cuba Edition</span></div>
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● LIVE</div>
+            <div id="status-dot" style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● LIVE</div>
             <button class="btn-sm" onclick="location.reload()">ACTUALIZAR</button>
         </div>
     </header>
@@ -62,7 +61,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-s
 </div>
 
 <script>
-// EL ROBOT DE PYTHON BUSCA "results: [" PARA ACTUALIZAR
+// EL ROBOT DE PYTHON BUSCA EXACTAMENTE ESTA LÍNEA: results: [
 const DATA_LOTO = {
     pick3fl: {
         results: [
@@ -82,14 +81,19 @@ const CHARADA = {1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",6:"Jic
 function init() {
     try {
         const res = DATA_LOTO.pick3fl.results;
+        if (!res || res.length === 0) return;
+        
         const ultimo = res[0];
 
+        // 1. Mostrar fecha y números grandes
         document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
         document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
 
-        const terminal = parseInt(ultimo.nums[1] + '' + ultimo.nums[2]);
+        // 2. Charada (Terminal de los 2 últimos números)
+        const terminal = parseInt("" + ultimo.nums[1] + ultimo.nums[2]);
         document.getElementById('charada-box').innerText = terminal + ' - ' + (CHARADA[terminal] || "Ver tabla");
 
+        // 3. Histórico
         document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
             <div class="re-row">
                 <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--dim);">${r.date}</div>
@@ -98,14 +102,19 @@ function init() {
             </div>
         `).join('');
 
-        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' -> ' + (ultimo.nums[0]+ultimo.nums[1])%10 + (ultimo.nums[1]+ultimo.nums[2])%10;
-    } catch(e) {
-        console.error("Error cargando datos:", e);
+        // 4. Pirámide (Lógica simple)
+        const p1 = (ultimo.nums[0] + ultimo.nums[1]) % 10;
+        const p2 = (ultimo.nums[1] + ultimo.nums[2]) % 10;
+        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + p1 + p2;
+
+    } catch (err) {
+        console.error("Error en la aplicación:", err);
+        document.getElementById('hero-numbers').innerHTML = "<span style='color:red;font-size:10px;'>Error al cargar datos. Refresca la página.</span>";
     }
 }
 
-// Iniciar
-init();
+// Ejecutar al cargar
+window.onload = init;
 </script>
 </body>
 </html>
