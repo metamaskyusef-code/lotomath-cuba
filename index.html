@@ -76,7 +76,33 @@ const DATA_LOTO = {
     }
 };
 
-const CHARADA = {1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",6:"Jicotea",7:"Caracol",8:"Muerto",9:"Elefante",10:"Pescado",11:"Gallo",12:"Mujer",13:"Pavo",14:"Gato fino",15:"Perro",16:"Toro",17:"Luna",18:"Pescado",19:"Lombriz",20:"Gato",21:"Reloj",22:"Sapo",23:"Vapor",24:"Paloma",25:"Piedra",26:"Anguila",27:"Avispa",28:"Chivo",29:"Rata",30:"Camarón"};
+// CHARADA - Sin duplicados (Corrección de tabla)
+const CHARADA = {
+    1:"Caballo",2:"Mariposa",3:"Marinero",4:"Gato",5:"Monja",
+    6:"Jicotea",7:"Caracol",8:"Muerto",9:"Elefante",10:"Pescado",
+    11:"Gallo",12:"Mujer",13:"Pavo",14:"Gato fino",15:"Perro",
+    16:"Toro",17:"Luna",18:"Pez",19:"Lombriz",20:"Novio",
+    21:"Reloj",22:"Sapo",23:"Vapor",24:"Paloma",25:"Piedra",
+    26:"Anguila",27:"Avispa",28:"Chivo",29:"Rata",30:"Camarón"
+};
+
+// Función auxiliar para crear elementos seguros (previene XSS)
+function createRball(number) {
+    const div = document.createElement('div');
+    div.className = 'rball';
+    div.textContent = String(number);
+    return div;
+}
+
+function createSmallRball(number) {
+    const span = document.createElement('span');
+    span.className = 'rball';
+    span.style.width = '24px';
+    span.style.height = '24px';
+    span.style.fontSize = '10px';
+    span.textContent = String(number);
+    return span;
+}
 
 function init() {
     try {
@@ -85,36 +111,74 @@ function init() {
         
         const ultimo = res[0];
 
-        // 1. Mostrar fecha y números grandes
-        document.getElementById('last-date').innerText = ultimo.date + ' (' + ultimo.time + ')';
-        document.getElementById('hero-numbers').innerHTML = ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('');
+        // Validación: asegurar que tenemos al menos 3 números
+        if (!ultimo.nums || ultimo.nums.length < 3) {
+            throw new Error("Datos de números inválidos");
+        }
 
-        // 2. Charada (Terminal de los 2 últimos números)
-        const terminal = parseInt("" + ultimo.nums[1] + ultimo.nums[2]);
-        document.getElementById('charada-box').innerText = terminal + ' - ' + (CHARADA[terminal] || "Ver tabla");
+        // 1. Mostrar fecha y números grandes (usando textContent para seguridad)
+        document.getElementById('last-date').textContent = `${ultimo.date} (${ultimo.time})`;
+        
+        const heroContainer = document.getElementById('hero-numbers');
+        heroContainer.innerHTML = ''; // Limpiar
+        ultimo.nums.forEach(n => {
+            heroContainer.appendChild(createRball(n));
+        });
 
-        // 3. Histórico
-        document.getElementById('history-list').innerHTML = res.slice(1).map(r => `
-            <div class="re-row">
-                <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--dim);">${r.date}</div>
-                <div>${r.nums.map(n => `<span class="rball" style="width:24px;height:24px;font-size:10px;">${n}</span>`).join('')}</div>
-                <div style="font-size:10px;color:var(--gold);font-weight:700;">${r.nums[1]}${r.nums[2]}</div>
-            </div>
-        `).join('');
+        // 2. Charada (Terminal de los 2 últimos números) - CON VALIDACIÓN
+        const terminal = parseInt(String(ultimo.nums[1]) + String(ultimo.nums[2]));
+        const charadaText = `${terminal} - ${CHARADA[terminal] || "Ver tabla"}`;
+        document.getElementById('charada-box').textContent = charadaText;
 
-        // 4. Pirámide (Lógica simple)
+        // 3. Histórico (usando textContent donde sea posible para XSS prevention)
+        const historyList = document.getElementById('history-list');
+        historyList.innerHTML = '';
+        
+        res.slice(1).forEach(r => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 're-row';
+            
+            const dateDiv = document.createElement('div');
+            dateDiv.style.fontFamily = "'JetBrains Mono'";
+            dateDiv.style.fontSize = '11px';
+            dateDiv.style.color = 'var(--dim)';
+            dateDiv.textContent = r.date;
+            rowDiv.appendChild(dateDiv);
+            
+            const numsDiv = document.createElement('div');
+            r.nums.forEach(n => {
+                numsDiv.appendChild(createSmallRball(n));
+            });
+            rowDiv.appendChild(numsDiv);
+            
+            const terminalDiv = document.createElement('div');
+            terminalDiv.style.fontSize = '10px';
+            terminalDiv.style.color = 'var(--gold)';
+            terminalDiv.style.fontWeight = '700';
+            terminalDiv.textContent = `${r.nums[1]}${r.nums[2]}`;
+            rowDiv.appendChild(terminalDiv);
+            
+            historyList.appendChild(rowDiv);
+        });
+
+        // 4. Pirámide (Lógica simple con validación)
         const p1 = (ultimo.nums[0] + ultimo.nums[1]) % 10;
         const p2 = (ultimo.nums[1] + ultimo.nums[2]) % 10;
-        document.getElementById('piramide-box').innerText = ultimo.nums.join('') + ' → ' + p1 + p2;
+        document.getElementById('piramide-box').textContent = `${ultimo.nums.join('')} → ${p1}${p2}`;
 
     } catch (err) {
         console.error("Error en la aplicación:", err);
-        document.getElementById('hero-numbers').innerHTML = "<span style='color:red;font-size:10px;'>Error al cargar datos. Refresca la página.</span>";
+        const errorSpan = document.createElement('span');
+        errorSpan.style.color = 'red';
+        errorSpan.style.fontSize = '10px';
+        errorSpan.textContent = 'Error al cargar datos. Refresca la página.';
+        document.getElementById('hero-numbers').innerHTML = '';
+        document.getElementById('hero-numbers').appendChild(errorSpan);
     }
 }
 
 // Ejecutar al cargar
-window.onload = init;
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
