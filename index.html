@@ -4,76 +4,89 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LotoMath Pro™ Cuba Edition</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* Aquí va todo tu CSS original (lo he omitido por espacio, pero mantén el tuyo) */
-:root{--bg:#05070d;--gold:#D4AF37;--text:#c5d4ee;--fl:#0052cc;}
-body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;margin:0;}
-.app{padding:20px;}
-.rball{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,82,204,.1);border:1px solid var(--fl);font-family:'JetBrains Mono';font-weight:700;margin:2px;}
+/* RESTAURANDO TU DISEÑO ORIGINAL COMPLETO */
+:root{
+  --bg:#05070d;--s1:#090c16;--s2:#0e1220;--b1:#1a2438;--b2:#202e4a;
+  --gold:#D4AF37;--text:#c5d4ee;--dim:#4a6284;--teal:#0bbfa8;--fl:#0052cc;
+}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:14px;margin:0;line-height:1.6;}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:rgba(5,7,13,.98);border-bottom:1px solid var(--b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.brand-name{font-family:'JetBrains Mono';font-size:16px;font-weight:700;color:#fff;}
+.brand-name em{color:var(--gold);font-style:normal;}
+.main{padding:16px 22px;max-width:1200px;margin:0 auto;width:100%;}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:15px;margin-bottom:15px;}
+.rball{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-weight:700;background:rgba(0,82,204,.1);border:1px solid var(--fl);color:#6699ff;margin-right:5px;}
+.re-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(26,36,56,.4);}
+/* Estilos de botones rápidos */
+.btn-sm{background:var(--s2);border:1px solid var(--b2);color:var(--gold);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="app">
-    <header style="border-bottom:1px solid #1a2438;padding-bottom:15px;margin-bottom:20px;">
-        <h1 style="font-family:'JetBrains Mono';font-size:22px;">LotoMath<span style="color:var(--gold)">Pro</span>™ <small style="font-size:12px;color:#4a6284;">Cuba Edition</small></h1>
-        <div id="update-status" style="font-size:10px;color:#0bbfa8;">● ACTUALIZADO AUTOMÁTICAMENTE</div>
+    <header class="topbar">
+        <div class="brand-name">LotoMath<em>Pro</em>™ <span style="font-size:10px;color:var(--dim)">Cuba Edition</span></div>
+        <div id="update-badge" style="font-size:10px;color:var(--teal);font-family:'JetBrains Mono';">● ACTUALIZADO</div>
     </header>
 
-    <section id="seccion-florida">
-        <h2 style="font-size:16px;color:var(--gold);">🌴 FLORIDA PICK 3</h2>
-        <div id="ultimos-resultados-fl" style="margin:15px 0;">
-            </div>
-    </section>
+    <main class="main">
+        <div class="card" id="hero-result">
+            <div style="color:var(--dim);font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">🌴 Florida Pick 3 — En Vivo</div>
+            <div id="render-last-fl"></div>
+        </div>
 
-    <hr style="border:0;border-top:1px solid #1a2438;margin:20px 0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
+            <button class="btn-sm" onclick="alert('Abriendo Charada...')">🀄 Charada</button>
+            <button class="btn-sm" onclick="alert('Calculando Pirámide...')">▲ Pirámide</button>
+        </div>
 
-    <section id="historico">
-        <h3 style="font-size:14px;color:#4a6284;">HISTÓRICO RECIENTE</h3>
-        <div id="lista-historico"></div>
-    </section>
+        <div class="card">
+            <div style="color:var(--dim);font-size:11px;margin-bottom:10px;">📋 HISTÓRICO RECIENTE</div>
+            <div id="render-hist-fl"></div>
+        </div>
+    </main>
 </div>
 
 <script>
-// ESTA ES LA ESTRUCTURA QUE EL ROBOT DE PYTHON BUSCARÁ PARA ACTUALIZAR
-// NO CAMBIES EL NOMBRE DE ESTAS VARIABLES
+/* ESTA ES LA ZONA QUE EL ROBOT DE PYTHON EDITARÁ.
+  EL ROBOT BUSCA "results: [" Y CAMBIA LOS DATOS.
+*/
 const DATA_ESTADISTICA = {
     pick3fl: {
-        id: 'pick3fl',
-        name: 'Florida Pick 3',
-        // EL ROBOT ACTUALIZARÁ ESTA LISTA AUTOMÁTICAMENTE
         results: [
             {date:'03/29', time:'Noche', nums:[1,0,2]},
             {date:'03/29', time:'Mediodía', nums:[4,8,5]},
             {date:'03/28', time:'Noche', nums:[7,3,9]},
             {date:'03/28', time:'Mediodía', nums:[0,1,6]},
-            {date:'03/27', time:'Noche', nums:[5,5,2]}
+            {date:'03/27', time:'Noche', nums:[5,5,2]},
+            {date:'03/27', time:'Mediodía', nums:[2,0,4]}
         ]
     }
 };
 
-// Función para mostrar los resultados en pantalla
-function render() {
-    const res = DATA_ESTADISTICA.pick3fl.results;
-    const container = document.getElementById('ultimos-resultados-fl');
-    const histContainer = document.getElementById('lista-historico');
+function init() {
+    const fl = DATA_ESTADISTICA.pick3fl.results;
     
-    // Mostrar el último resultado grande
-    const ultimo = res[0];
-    container.innerHTML = `
-        <div style="font-size:12px;margin-bottom:5px;">Sorteo: ${ultimo.date} (${ultimo.time})</div>
-        <div>${ultimo.nums.map(n => `<div class="rball">${n}</div>`).join('')}</div>
+    // Render del último resultado (Grande)
+    const last = fl[0];
+    document.getElementById('render-last-fl').innerHTML = `
+        <div style="font-size:24px;font-weight:700;margin-bottom:5px;">${last.nums.join(' ')}</div>
+        <div style="font-size:12px;color:var(--dim);">Sorteo del ${last.date} (${last.time})</div>
     `;
 
-    // Mostrar el resto en el histórico
-    histContainer.innerHTML = res.slice(1).map(r => `
-        <div style="font-size:11px;padding:5px 0;border-bottom:1px solid #0e1220;">
-            ${r.date} - ${r.nums.join(' · ')}
+    // Render del Histórico
+    document.getElementById('render-hist-fl').innerHTML = fl.slice(1).map(r => `
+        <div class="re-row">
+            <div style="font-family:'JetBrains Mono';font-size:12px;">${r.date}</div>
+            <div>${r.nums.map(n => `<span class="rball">${n}</span>`).join('')}</div>
+            <div style="font-size:10px;color:var(--dim);">${r.time}</div>
         </div>
     `).join('');
 }
 
-render();
+init();
 </script>
 </body>
 </html>
